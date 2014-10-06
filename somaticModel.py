@@ -3,15 +3,14 @@
 The following modified by Morgan Fine-Morris during October 2014. Dendritic component removed
 and somatic component adjusted to match Butera 99 models.
 
+Vleaks values from Buter99 paper are -60,-57.5,-54 (all mV)
+
 Model of somato-dendritic burster
 From Toporikova and Butera, J. Comp neuroscience, DOI 10.1007/s10827-010-0274-z
 Model with following parameters reproduce Figure 1B of the paper above
 setting gcan=0, convert model to Pruvis and Butera 2007
 units: V = mV; Kca = uM; Cm = uF/cm^2; g = uS/cm^2; phi = 1/s;
 Parameter fi is normalized with respect to intracellular volume, so it's units fi=1/pL; 
-
-
-
 """
 import numpy as np
 import matplotlib.pyplot as plt
@@ -19,41 +18,51 @@ import math
 import scipy
 from scipy.integrate import odeint
 #
+
+#init V and vleaks
+v = -57.5
+
 # INITIAL CONDITIONS
-Vs0=-60
+Vs0=v#-54
 ns0=0.004
 hs0=0.33
 
 # variables
-tEnd = 10000.
-dt=0.3
+tEnd = 2*10000.
+dt=0.1
 tLen = int(tEnd/dt)
-
 
 # PARAMETERS
 
 # conductances of persistent sodium current
-gnaps=2.
+gnaps=2.8
 
 # Somatic Parameters (same as Butera and Pruvis 2007)
 Cms=21
+
 vna=50
 Vk=-85
+
 gk=11.2
 gna=28
+
 vm=-34
 vn=-29
 vmp=-40
 vh=-48
+
 sm=-5
-sl=6
 sn=-4
 smp=-6
-sh=5
+sh=6
+
 taunb=10
 tauhb=10000
-gls=2.3
-vleaks=-57
+
+# leak current variables
+gls=2.8
+vleaks=v
+
 Iaps=0
 
 def df(y,t): 
@@ -65,7 +74,7 @@ def df(y,t):
     minfs=1/(1+math.exp((Vs-vm) /sm))
     ninfs=1/(1+math.exp((Vs-vn) /sn))
     minfps=1/(1+math.exp((Vs-vmp)/smp))
-    hinfs =1/(1+math.exp((Vs-vh) /sh))
+    hinfs=1/(1+math.exp((Vs-vh) /sh))
     
     tauns=taunb/math.cosh((Vs-vn)/(2*sn))
     tauhs=tauhb/math.cosh((Vs-vh)/(2*sh))
@@ -90,15 +99,13 @@ soln = odeint(df, y0, t)
 Vs = soln[:, 0]
 ns=soln[:, 0]
 hs=soln[:, 0]
-Vd=soln[:, 0]
-C0=soln[:, 0]
-l0=soln[:, 0]
  
 plt.figure()
 plt.plot(t/1000.,Vs,'k')
+print Vs
 plt.ylabel('V (mV)', fontsize=16)
 plt.xlabel('time (sec)', fontsize=16)
-plt.ylim(-60,10)
+plt.ylim(-80,10)
 #plt.savefig('ca_urst.png')
 plt.show()
 
