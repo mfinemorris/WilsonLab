@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-The following modified by Morgan Fine-Morris during October 2014. Dendritic component removed
-and somatic component adjusted to match Butera 99 models.
+The following modified by Morgan Fine-Morris, October 2014. 
+Dendritic component removed and variable values of somatic component adjusted to match model 1 of
+Butera et al. , J. Neurophysiol, July 1999 Vol. 82 no. 1 382-397
 
-Vleaks values from Buter99 paper are -60,-57.5,-54 (all mV)
+Vleaks values from Butera paper are -60,-57.5,-54 (all mV)
 
 Model of somato-dendritic burster
 From Toporikova and Butera, J. Comp neuroscience, DOI 10.1007/s10827-010-0274-z
@@ -17,20 +18,22 @@ import matplotlib.pyplot as plt
 import math
 import scipy
 from scipy.integrate import odeint
-#
+
+import time
+
 
 #init V and vleaks
-v = -57.5
+v = -60.0
 
 # INITIAL CONDITIONS
-Vs0=v#-54
+Vs0=v
 ns0=0.004
 hs0=0.33
 
 # variables
-tEnd = 2*10000.
-dt=0.1
-tLen = int(tEnd/dt)
+tEnd=20*1000.
+dt=0.3
+tLen=int(tEnd/dt)
 
 # PARAMETERS
 
@@ -93,13 +96,22 @@ def df(y,t):
     
     return [dVs,dns,dhs]
 
+
+#start timer
+start = time.clock()
+#solve eq
 y0 = [Vs0,ns0,hs0]
 t = scipy.linspace(0,tEnd,tLen)
 soln = odeint(df, y0, t)
 Vs = soln[:, 0]
 ns=soln[:, 0]
 hs=soln[:, 0]
+#end timer
+end = time.clock()
+print "Duration: ", end - start, "seconds"
  
+
+#plot voltage vs time
 plt.figure()
 plt.plot(t/1000.,Vs,'k')
 print Vs
