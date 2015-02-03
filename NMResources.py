@@ -4,7 +4,7 @@ import re
 import shutil
 
 
-debug = False
+debug = True
 
 def make_filepaths(info_type, model, time, parameters={}, extension='txt', path=''):
     '''
@@ -33,6 +33,14 @@ def make_filepaths(info_type, model, time, parameters={}, extension='txt', path=
         return file_name
 
 def deconstruct_filepaths(file_path):
+    '''
+    Deconstructs a filepath of format:
+
+    info_type '-' model '-sec' time '-' parameters '.' extension
+
+    and returns 
+
+    '''
     
     ## break up the path into its components ##
     #separate the directory from the file name
@@ -51,7 +59,7 @@ def deconstruct_filepaths(file_path):
         param_name = re.sub("[^A-z]", "", i).replace("_","") #extract secondary parameter from file name
         param_val = re.sub("[^0-9.]", "", i.replace("_",".")) #extract secondary parameter from file name
         params[param_name] = param_val
-    seconds = params['sec']
+    seconds = float(params['sec'])*1000.
     del params['sec']
     
     return stored_data_type, model, seconds, params, ext, directory
@@ -63,7 +71,10 @@ def test():
     path = make_filepaths('voltage', 'BRSModel', 1000*60*6, parameters={'IP':None, 'gL':2.3, 'gnaps':None}, path = os.getcwd())
     print "constructed path: ",path
     print
-    print deconstruct_filepaths(path)
+    path_parts = deconstruct_filepaths(path)
+    print path_parts
+    print
+    print make_filepaths(*path_parts)
 
 
 def convert_to_new_scheme(file_dir, pattern):
