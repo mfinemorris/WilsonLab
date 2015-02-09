@@ -6,6 +6,25 @@ from numpy import *
 import pandas
 
 debug = True
+element_sep = "-"
+#period_sub = "o" #may use in future
+
+def preprocess_params(parameters):
+    parameters = sorted(parameters.items(), key=operator.itemgetter(1)) #sort dictionary so that items with None will appear first
+    params = element_sep.join([key+str(val) if val else key for key,val in parameters]).replace('.','_') #process params
+    return params
+
+
+
+def make_folderpaths(model, time, parameters={}, path=''):
+    params = preprocess_params(parameters)
+    time_seconds = str(int(round(time/1000.))) #convert time to seconds and string
+    name_parts = [model, "sec"+ time_seconds]
+    folder_name = element_sep.join((name_parts+[params] if params else name_parts))
+    return folder_name
+
+
+
 
 def make_filepaths(info_type, model, time, parameters={}, extension='txt', path=''):
     '''
@@ -22,18 +41,17 @@ def make_filepaths(info_type, model, time, parameters={}, extension='txt', path=
     path = the path if different from the current working directory
     '''
     #prepare file name components
-    parameters = sorted(parameters.items(), key=operator.itemgetter(1)) #sort dictionary so that items with None will appear first
-    params = "-".join([key+str(val) if val else key for key,val in parameters]).replace('.','_') #process params
+    params = preprocess_params(parameters)
     time_seconds = str(int(round(time/1000.))) #convert time to seconds and string
     file_name_parts = [info_type, model, "sec"+ time_seconds]
 
-    file_name = "-".join((file_name_parts+[params] if params else file_name_parts)) + "." + extension
+    file_name = element_sep.join((file_name_parts+[params] if params else file_name_parts)) + "." + extension
     if path and os.path.isdir(path):
         return os.path.join(path, file_name)
     else:
         return file_name
 
-def deconstruct_filepaths(file_path):
+def deconstruct_filepaths(file_path, element_seperator=None):
     '''
     Deconstructs a filepath of format:
 
@@ -50,8 +68,11 @@ def deconstruct_filepaths(file_path):
     #separate the file extension and file path
     file_info, delim, ext = base.partition('.')
     #break the file name into its components
-    file_info = file_info.split("-")
-    
+    if element_seperator:
+        file_info = file_info.split(element_seperator)
+    else:
+        file_info = file_info.split(element_sep)
+
     stored_data_type = file_info[0]
     model = file_info[1]
     
@@ -67,6 +88,8 @@ def deconstruct_filepaths(file_path):
 
 def test():
     #test that it works
+    print "Folder: ",make_folderpaths('BRSModel', 1000*60*6, parameters={'IP':None, 'gL':2.3, 'gnaps':None}, path = os.getcwd())
+
     print "Calling make_filepaths('voltage', 'BRSModel', 1000*60*6, parameters={'IP':None, 'gL':2.3, 'gnaps':None}) creates name:"
     print
     path = make_filepaths('voltage', 'BRSModel', 1000*60*6, parameters={'IP':None, 'gL':2.3, 'gnaps':None}, path = os.getcwd())
