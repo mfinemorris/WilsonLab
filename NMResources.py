@@ -2,7 +2,8 @@ import operator
 import os
 import re
 import shutil
-
+from numpy import *
+import pandas
 
 debug = True
 
@@ -104,11 +105,17 @@ def convert_to_new_scheme(file_dir, pattern):
             print "Failed to rename", old_path, "to", new_path
 
 
-if __name__ == "__main__":
-    if not debug:
-        convert_to_new_scheme(os.path.join(os.getcwd(), 'Results'), 'voltages-IP-TBModel') 
-    else:
-        test()
-        
 
+
+
+
+
+
+
+if __name__ == "__main__":
+    if debug:
+        test()
+        sys.exit()
+    #convert_to_new_scheme(os.path.join(os.getcwd(), 'Results'), 'voltages-IP-TBModel')
+    
 
