@@ -21,8 +21,10 @@ def make_folderpaths(model, time, parameters={}, path=''):
     time_seconds = str(int(round(time/1000.))) #convert time to seconds and string
     name_parts = [model, "sec"+ time_seconds]
     folder_name = element_sep.join((name_parts+[params] if params else name_parts))
-    return folder_name
-
+    if path and os.path.isdir(path):
+        return os.path.join(path, folder_name)
+    else:
+        return folder_name
 
 
 
