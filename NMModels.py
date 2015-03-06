@@ -82,7 +82,7 @@ class BRSModel(object):
         for i in self._param_names:
             try:
                 self.__dict__[i] = float(param_dict[i])
-            except Exception as e:
+            except (KeyError, AttributeError) as e:
                 #if is missing from var dictionary, let user know or not, depending on boolean val
                 self.__dict__[i] = self.__class__.__dict__[i]
                 if  warn:
@@ -103,7 +103,7 @@ class BRSModel(object):
                 continue
             try:
                 item = vars(self)[key]
-            except:
+            except (KeyError, AttributeError):
                 item = self.__class__.__dict__[key]
 
             print "{:<9s}: {:<10} \t ".format(key, item),
@@ -220,14 +220,27 @@ class BRSModel(object):
             if use_jacobian:
                 y = integrate.odeint(self.model, initial_state, t, Dfun=self.jacobian)
             else:
-                raise Exception() #to be caught be except, so that integration is tried w/out jacobian
+                y = integrate.odeint(self.model, initial_state, t)
+        except KeyboardInterrupt:
+            if autosave_dir:
+                sim_data = pandas.DataFrame(data=y, index=t, columns=['Vs0', 'ns0', 'hs0'])
+                self._autosave(autosave_dir, sim_data)
+            raise
+        except Exception as e:
+                raise("Could not run simulation. Exceptions: %s"%e)
+        '''
+        try:
+            if use_jacobian:
+                y = integrate.odeint(self.model, initial_state, t, Dfun=self.jacobian)
+            else:
+                raise Exception() #to be caught by except, so that integration is tried w/out jacobian
         except Exception as e:
             try:
-                y = integrate.odeint(self.model, initial_state, t)
                 print "Running simulation without jacobian.", e
+                y = integrate.odeint(self.model, initial_state, t)
             except Exception as a:
                 raise("Could not run simulation. Exceptions: %s"%a)
-
+        '''
         #extract membrane voltage
         V = y.T[0] 
 
